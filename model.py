@@ -104,8 +104,8 @@ class DCCF(nn.Module):
             int_layer_embeddings = torch.concat([u_int_embeddings, i_int_embeddings], dim=0)  # (用户数+项目数)x32
 
             # Adaptive Augmentation
-            gnn_head_embeddings = torch.index_select(gnn_layer_embeddings, 0, self.all_h_list)  #adjacency_list_row
-            gnn_tail_embeddings = torch.index_select(gnn_layer_embeddings, 0, self.all_t_list)  #adjacency_list_col
+            gnn_head_embeddings = torch.index_select(gnn_layer_embeddings, 0, self.all_h_list)  #all_h_list=adjacency_list_row，邻接矩阵的行
+            gnn_tail_embeddings = torch.index_select(gnn_layer_embeddings, 0, self.all_t_list)  #adjacency_list_col，邻接矩阵的列
             int_head_embeddings = torch.index_select(int_layer_embeddings, 0, self.all_h_list)
             int_tail_embeddings = torch.index_select(int_layer_embeddings, 0, self.all_t_list)
             G_graph_indices, G_graph_values = self._adaptive_mask(gnn_head_embeddings, gnn_tail_embeddings)
