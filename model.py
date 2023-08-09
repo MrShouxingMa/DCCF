@@ -24,11 +24,11 @@ class DCCF(nn.Module):
         self.G_indices, self.G_values = self._cal_sparse_adj()
 
         self.emb_dim = args.embed_size
-        self.n_layers = args.n_layers
+        self.n_layers = args.n_layers  #2
         self.n_intents = args.n_intents
         self.temp = args.temp
 
-        self.batch_size = args.batch_size
+        self.batch_size = args.batch_size #32
         self.emb_reg = args.emb_reg
         self.cen_reg = args.cen_reg
         self.ssl_reg = args.ssl_reg
