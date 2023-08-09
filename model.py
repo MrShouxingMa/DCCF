@@ -23,12 +23,12 @@ class DCCF(nn.Module):
         self.all_t_list = torch.LongTensor(self.all_t_list).cuda()
         self.G_indices, self.G_values = self._cal_sparse_adj()
 
-        self.emb_dim = args.embed_size
+        self.emb_dim = args.embed_size #32
         self.n_layers = args.n_layers  #2
-        self.n_intents = args.n_intents
+        self.n_intents = args.n_intents #128
         self.temp = args.temp
 
-        self.batch_size = args.batch_size #32
+        self.batch_size = args.batch_size #10240
         self.emb_reg = args.emb_reg
         self.cen_reg = args.cen_reg
         self.ssl_reg = args.ssl_reg
