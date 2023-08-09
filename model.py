@@ -38,13 +38,13 @@ class DCCF(nn.Module):
         *********************************************************
         Create Model Parameters
         """
-        self.user_embedding = nn.Embedding(self.n_users, self.emb_dim)
-        self.item_embedding = nn.Embedding(self.n_items, self.emb_dim)
+        self.user_embedding = nn.Embedding(self.n_users, self.emb_dim) #N x 32
+        self.item_embedding = nn.Embedding(self.n_items, self.emb_dim) #N x 32
 
-        _user_intent = torch.empty(self.emb_dim, self.n_intents)
+        _user_intent = torch.empty(self.emb_dim, self.n_intents) #32 x 128
         nn.init.xavier_normal_(_user_intent)
         self.user_intent = torch.nn.Parameter(_user_intent, requires_grad=True)
-        _item_intent = torch.empty(self.emb_dim, self.n_intents)
+        _item_intent = torch.empty(self.emb_dim, self.n_intents) #32 x 128
         nn.init.xavier_normal_(_item_intent)
         self.item_intent = torch.nn.Parameter(_item_intent, requires_grad=True)
 
