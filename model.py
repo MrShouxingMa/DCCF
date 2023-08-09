@@ -14,8 +14,8 @@ class DCCF(nn.Module):
         self.n_items = data_config['n_items']
 
         self.plain_adj = data_config['plain_adj']
-        self.all_h_list = data_config['all_h_list']
-        self.all_t_list = data_config['all_t_list']
+        self.all_h_list = data_config['all_h_list']   #adjacency_list_row
+        self.all_t_list = data_config['all_t_list']   #adjacency_list_col
         self.A_in_shape = self.plain_adj.tocoo().shape
         self.A_indices = torch.tensor([self.all_h_list, self.all_t_list], dtype=torch.long).cuda()
         self.D_indices = torch.tensor([list(range(self.n_users + self.n_items)), list(range(self.n_users + self.n_items))], dtype=torch.long).cuda()
@@ -74,10 +74,10 @@ class DCCF(nn.Module):
 
         head_embeddings = torch.nn.functional.normalize(head_embeddings)
         tail_embeddings = torch.nn.functional.normalize(tail_embeddings)
-        edge_alpha = (torch.sum(head_embeddings * tail_embeddings, dim=1).view(-1) + 1) / 2
+        edge_alpha = (torch.sum(head_embeddings * tail_embeddings, dim=1).view(-1) + 1) / 2    #M^l_i,j
 
         A_tensor = torch_sparse.SparseTensor(row=self.all_h_list, col=self.all_t_list, value=edge_alpha, sparse_sizes=self.A_in_shape).cuda()
-        D_scores_inv = A_tensor.sum(dim=1).pow(-1).nan_to_num(0, 0, 0).view(-1)
+        D_scores_inv = A_tensor.sum(dim=1).pow(-1).nan_to_num(0, 0, 0).view(-1) #  pow负一次方，再将nan转为可运算值，在reshape(view)
 
         G_indices = torch.stack([self.all_h_list, self.all_t_list], dim=0)
         G_values = D_scores_inv[self.all_h_list] * edge_alpha
@@ -99,13 +99,13 @@ class DCCF(nn.Module):
 
             # Intent-aware Information Aggregation
             u_embeddings, i_embeddings = torch.split(all_embeddings[i], [self.n_users, self.n_items], 0)
-            u_int_embeddings = torch.softmax(u_embeddings @ self.user_intent, dim=1) @ self.user_intent.T
-            i_int_embeddings = torch.softmax(i_embeddings @ self.item_intent, dim=1) @ self.item_intent.T
-            int_layer_embeddings = torch.concat([u_int_embeddings, i_int_embeddings], dim=0)
+            u_int_embeddings = torch.softmax(u_embeddings @ self.user_intent, dim=1) @ self.user_intent.T   #  N x 32  @ 32 x 128   @  128x32  = Nx32
+            i_int_embeddings = torch.softmax(i_embeddings @ self.item_intent, dim=1) @ self.item_intent.T   # Nx32
+            int_layer_embeddings = torch.concat([u_int_embeddings, i_int_embeddings], dim=0)  # (用户数+项目数)x32
 
             # Adaptive Augmentation
-            gnn_head_embeddings = torch.index_select(gnn_layer_embeddings, 0, self.all_h_list)
-            gnn_tail_embeddings = torch.index_select(gnn_layer_embeddings, 0, self.all_t_list)
+            gnn_head_embeddings = torch.index_select(gnn_layer_embeddings, 0, self.all_h_list)  #adjacency_list_row
+            gnn_tail_embeddings = torch.index_select(gnn_layer_embeddings, 0, self.all_t_list)  #adjacency_list_col
             int_head_embeddings = torch.index_select(int_layer_embeddings, 0, self.all_h_list)
             int_tail_embeddings = torch.index_select(int_layer_embeddings, 0, self.all_t_list)
             G_graph_indices, G_graph_values = self._adaptive_mask(gnn_head_embeddings, gnn_tail_embeddings)
